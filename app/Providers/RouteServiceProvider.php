@@ -70,5 +70,10 @@ class RouteServiceProvider extends ServiceProvider
              ->middleware('api')
              ->namespace($this->namespace)
              ->group(base_path('routes/api.php'));
+
+        Route::prefix('wx')
+            ->middleware('api')
+            ->namespace($this->namespace)
+            ->group(base_path('routes/wxapi.php'));
     }
 }
