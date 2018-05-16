@@ -23,6 +23,9 @@ class HelpController extends Controller
     }
 
     public function show() {
+        echo env('DB_HOST', '127.0.0.1');
+        echo config('env');
+        echo config('wxxcx.appid', '');
         return view('help.show');
     }
     public function controller($id) {
