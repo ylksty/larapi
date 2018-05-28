@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
-use App\User;
+use App\WxUser as User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -14,6 +14,10 @@ class UserController extends Controller
     {
         $code = request('code', '');
         $userInfo = $wxxcx->getLoginInfo($code);
+        die(json_encode(array(
+            'code'  => 200,
+            'data'  => $userInfo
+        )));
         print_r($userInfo);
         echo 'login';
     }
@@ -34,9 +38,16 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, User $user)
     {
         //
+        $data = $request->post('data');
+//        print_r(json_decode($data));
+
+        die(json_encode(array(
+            'code'  => 200,
+            'data'  => true
+        )));
     }
 
     /**
