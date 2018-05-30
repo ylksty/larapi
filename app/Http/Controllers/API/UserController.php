@@ -6,20 +6,41 @@ use App\WxUser as User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-use Iwanli\Wxxcx\Wxxcx;
+use App\Wx\Wxapi;
+use App\Contracts\WxUser;
 
 class UserController extends Controller
 {
-    public function login(Wxxcx $wxxcx)
+    public function login(Request $request, Wxapi $wxapi, WxUser $user)
     {
-        $code = request('code', '');
-        $userInfo = $wxxcx->getLoginInfo($code);
-        die(json_encode(array(
-            'code'  => 200,
-            'data'  => $userInfo
-        )));
-        print_r($userInfo);
-        echo 'login';
+        $code = $request->post('code');
+        $type = $request->post('type');
+        if (!$code || !$type) {
+            return response()->json([
+                'code'  => 201,
+                'msg'   => '缺少必要参数code或type'
+            ]);
+        }
+        $userInfo = $wxapi->getLoginInfo($code);
+        if (isset($userInfo['errmsg'])) {
+            return response()->json([
+                'code'  => 201,
+                'msg'   => $userInfo['errmsg']
+            ]);
+        } else {
+            $oneUser = $user->updateOrCreate(
+                ['openid' => $userInfo['openid']], ['session_key' => $userInfo['session_key']]
+            );
+            $request->session()->put([
+                'type' => strtolower($type),
+                'id' => strtolower($oneUser->id),
+                'openid' => strtolower($oneUser->openid),
+            ]);
+            return response()->json([
+                'code'  => 200,
+                'data'  => $request->session()->getId()
+            ]);
+        }
     }
     /**
      * Display a listing of the resource.
@@ -38,16 +59,31 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, User $user)
+    public function store(Request $request, Wxapi $wxapi, WxUser $user)
     {
         //
-        $data = $request->post('data');
-//        print_r(json_decode($data));
+        $encryptedData = $request->post('encryptedData');
+        $iv = $request->post('iv');
 
-        die(json_encode(array(
+        $id = $request->session()->get('id');
+        $oneUser = $user->find($id);
+        $sessionKey = $oneUser->session_key;
+        $userInfo = $wxapi->getUserInfoA($encryptedData, $iv, $sessionKey);
+        $userInfo = json_decode($userInfo, true);
+        $oneUser->nick_name = $userInfo['nickName'];
+        $oneUser->avatar_url = $userInfo['avatarUrl'];
+        $oneUser->gender = $userInfo['gender'];
+        $oneUser->language = $userInfo['language'];
+        $oneUser->city = $userInfo['city'];
+        $oneUser->province = $userInfo['province'];
+        $oneUser->country = $userInfo['country'];
+        $oneUser->union_id = isset($userInfo['unionId']) ? $userInfo['unionId'] : '';
+        $oneUser->save();
+
+        return response()->json([
             'code'  => 200,
             'data'  => true
-        )));
+        ]);
     }
 
     /**
@@ -83,5 +119,14 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         //
+    }
+
+    private function getModelByType($type) {
+        $type = strtolower($type);
+        $typeModel = [
+            'demo'  => 'App\WxDemoUser'
+        ];
+        $modelString = isset($typeModel[$type]) ? $typeModel[$type] : '';
+        return new $modelString();
     }
 }

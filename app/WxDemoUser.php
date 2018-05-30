@@ -3,8 +3,9 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Contracts\WxUser;
 
-class WxUser extends Model
+class WxDemoUser extends Model implements WxUser
 {
     //
     /**
@@ -12,7 +13,7 @@ class WxUser extends Model
      *
      * @var string
      */
-//    protected $table = 'wx_jjds_users';
+    protected $table = 'wx_demo_users';
 
     /**
      * 可以被批量赋值的属性。
