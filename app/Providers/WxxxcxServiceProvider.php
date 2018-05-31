@@ -12,7 +12,7 @@ class WxxxcxServiceProvider extends ServiceProvider
      *
      * @var bool
      */
-    protected $defer = true;
+//    protected $defer = true;
 
     /**
      * Bootstrap services.

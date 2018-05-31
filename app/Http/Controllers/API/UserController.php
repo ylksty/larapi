@@ -2,23 +2,21 @@
 
 namespace App\Http\Controllers\API;
 
-use App\WxUser as User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 use App\Wx\Wxapi;
-use App\Contracts\WxUser;
+use App\WxDemoUser as WxUser;
 
 class UserController extends Controller
 {
     public function login(Request $request, Wxapi $wxapi, WxUser $user)
     {
         $code = $request->post('code');
-        $type = $request->post('type');
-        if (!$code || !$type) {
+        if (!$code) {
             return response()->json([
                 'code'  => 201,
-                'msg'   => '缺少必要参数code或type'
+                'msg'   => '缺少必要参数code'
             ]);
         }
         $userInfo = $wxapi->getLoginInfo($code);
@@ -32,7 +30,6 @@ class UserController extends Controller
                 ['openid' => $userInfo['openid']], ['session_key' => $userInfo['session_key']]
             );
             $request->session()->put([
-                'type' => strtolower($type),
                 'id' => strtolower($oneUser->id),
                 'openid' => strtolower($oneUser->openid),
             ]);
@@ -121,12 +118,5 @@ class UserController extends Controller
         //
     }
 
-    private function getModelByType($type) {
-        $type = strtolower($type);
-        $typeModel = [
-            'demo'  => 'App\WxDemoUser'
-        ];
-        $modelString = isset($typeModel[$type]) ? $typeModel[$type] : '';
-        return new $modelString();
-    }
+
 }

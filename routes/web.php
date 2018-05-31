@@ -18,6 +18,9 @@ Route::get('/', function () {
 Route::get('/help', 'HelpController@show');
 Route::get('/help/show', 'HelpController@show');
 Route::get('/help/controller/{id}', 'HelpController@controller');
+Route::get('/help/htmlToJpg', 'HelpController@htmlToJpg');
+Route::get('/help/htmlToJpgByPantomjs', 'HelpController@htmlToJpgByPantomjs');
+Route::get('/help/toEgg', 'HelpController@toEgg');
 Route::get('/photos/list', 'PhotoController@list');
 Route::resource('photos', 'PhotoController', ['names' => [
     'create' => 'photos.build'
